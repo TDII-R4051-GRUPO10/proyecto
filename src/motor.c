@@ -6,3 +6,9 @@
  */
 
 
+#include <motor.h>
+
+void configVaso(typedef_posicionVaso vaso)
+{
+
+}

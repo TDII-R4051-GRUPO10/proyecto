@@ -20,6 +20,7 @@ typedef struct
 
 typedef_posicionVaso vaso[CANTvASOS];
 
+void configVaso(typedef_posicionVaso vaso);
 void moverAvaso(typedef_posicionVaso vaso);
 
 #endif /* PROJECTS_PROYECTO_INC_MOTOR_H_ */

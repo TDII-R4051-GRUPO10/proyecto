@@ -5,7 +5,6 @@
 
 enum {inicial, medicion,amarillo,rojo,azul,marron,verde};
 int valor;
-//todes putes menes conmigues
 
 void maq_estados(void)
 {
