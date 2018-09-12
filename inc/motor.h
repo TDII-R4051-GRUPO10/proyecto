@@ -16,11 +16,19 @@ typedef struct
 {
 	int grados;
 	int dir;
-} typedef_posicionVaso;
+} typedef_posicionObjeto;
 
-typedef_posicionVaso vaso[CANTvASOS];
+typedef_posicionObjeto vaso[CANTvASOS];
+typedef_posicionObjeto sensor;
 
-void configVaso(typedef_posicionVaso vaso);
-void moverAvaso(typedef_posicionVaso vaso);
+//FUNCIONES PARA EL MOTOR QUE REPARTE EN VASOS
+
+void configVaso(int vasoColor, int grados, int dir);
+void moverAvaso(int vasoColor);
+
+//FUNCIONES PARA EL MOTOR QUE SENSA PASTILLAS
+
+void configPosSensor(int grados, int dir);
+void moverAsensor();
 
 #endif /* PROJECTS_PROYECTO_INC_MOTOR_H_ */
