@@ -1,6 +1,7 @@
 
 
 
+
 #define error_max 10
 
 enum {inicial, medicion,amarillo,rojo,azul,marron,verde};
@@ -15,12 +16,13 @@ void maq_estados(void)
 	{
 		case inicial:
 				//girar la rueda tantos grados hasta la posicion de medir con el sensor
+
 				estado= medicion;
 		break;
 
 		case medicion:
 
-		//obtener valor de la medicion valor = medicion_sensor();
+		//obtener valor de la medicion (libera tarea medicion);
 
 				if(valor = amarillo)
 				{
@@ -58,7 +60,9 @@ void maq_estados(void)
 
 					if(error >= error_max)
 					{
-						//titilar_led
+						parpadear_led();
+
+						//titilar_led habilitar tarea de parpadeo
 						//enviar a display "recargar tolba"
 					}
 
