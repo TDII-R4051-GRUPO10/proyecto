@@ -243,7 +243,7 @@ static void Tarea_Ppal()
 				{
 					cont=0;
 
-					colores[i]++;
+					colores[data-1]++;
 
 					xQueueSend(contador,&colores,DELAY);
 
