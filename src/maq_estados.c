@@ -15,15 +15,16 @@ void maq_estados(void)
 	switch(estado)
 	{
 		case inicial:
-				//girar la rueda tantos grados hasta la posicion de medir con el sensor
 
+			xSemaphoreGive(motor1);	//girar la rueda tantos grados hasta la posicion de medir con el sensor
+			//esperar que se posicione en el sensor
 				estado= medicion;
 		break;
 
 		case medicion:
 
-		//obtener valor de la medicion (libera tarea medicion);
-
+			xSemaphoreGive(sensor_color);//obtener valor de la medicion (libera tarea medicion);
+			//esperar a que me libere el semaforo de que ya obtuvo el valor
 				if(valor = amarillo)
 				{
 					error=0;
@@ -60,7 +61,6 @@ void maq_estados(void)
 
 					if(error >= error_max)
 					{
-						parpadear_led();
 
 						//titilar_led habilitar tarea de parpadeo
 						//enviar a display "recargar tolba"
