@@ -44,20 +44,15 @@ void initHardware(void)
 {
     SystemCoreClockUpdate();
 
-	/* ESTO ES UNA PRUEBA QUE HICE CON LEDS A VER SI FUNCIONABA */
-
 	SetPINSEL(MOTOR,0);
-	SetPINSEL(INTERRUPT1,1);
 	SetPINSEL(INTERRUPT2,1);
+//	SetPINSEL(INTERRUPT3,1);
 	SetPINSEL(LED1,0);
 	SetPINSEL(LED2,0);
 	SetPINSEL(LED3,0);
 	SetPINSEL(LED4,0);
 	SetPINSEL(LED5,0);
 
-	EXTMODE|=(0x01<<3);
-	EXTPOLAR&=~(0x01<<3);
-	ISER0|=(0x01<<21);
 
 	EXTMODE|=(0x01<<2);
 	EXTPOLAR&=~(0x01<<2);
@@ -71,6 +66,16 @@ void initHardware(void)
 	SetDIR(LED4,GPIO_OUTPUT);
 	SetDIR(LED5,GPIO_OUTPUT);
 	SetDIR(ALARM,GPIO_OUTPUT);
+
+
+	SetPIN(LED1,0);
+	SetPIN(LED2,0);
+	SetPIN(LED3,0);
+	SetPIN(LED4,0);
+	SetPIN(LED5,0);
+
+	SetPIN(ALARM,0);
+
 
 }
 
@@ -228,31 +233,16 @@ static void Motor1(void *p)
 static void Motor1_STOP(void *p)
 {
 
-	initHardware();
-
-	xSemaphoreTake(init,0);
-	xSemaphoreTake(motor1,0);
-	xSemaphoreTake(motor2,0);
-	xSemaphoreTake(alarma,0);
-	xSemaphoreTake(sensor_color,0);
-	xSemaphoreTake(sd,0);
-	xSemaphoreTake(motor1_ISR,0);
-
-	xSemaphoreTake(init_OK,0);
-	xSemaphoreTake(motor1_OK,0);
-	xSemaphoreTake(motor2_OK,0);
-	xSemaphoreTake(alarma_OK,0);
-	xSemaphoreTake(sd_OK,0);
-
+	tomar_semaforos();
 
 	while(1)
 	{
 
-		if(xSemaphoreTake(motor1_ISR,DELAY)==pdTRUE)		//tomo semáforo de la interrupcion ef hall
+		if(xSemaphoreTake(motor1_ISR,DELAY)==pdTRUE)		//tomo semáforo de la interrupcion del hall
 		{
 			pararM1();										//driver de frenado M1
 
-			ISER0&=~(0x01<<21);								//desabilito la interrupcion, el sistema ya se inicializo 
+			Deshabilitar_Interrupcion();
 
 			xSemaphoreGive(init_OK);
 		}
@@ -334,7 +324,6 @@ static void SD(void *p)
 
 int main(void){
 
-
 	initHardware();
 
 	vSemaphoreCreateBinary(init);
@@ -358,14 +347,12 @@ int main(void){
 	contador= xQueueCreate(5,sizeof(int));
 
 
-	/* REVISO QUE SE HAYAN CREADO LOS SEMAFOROS Y COLAS, TAMBIEN REVISO QUE HAYA ESPACIO PARA LAS TAREAS*/
-
-
 	if(!init || !motor1 || !motor2 || !alarma || ! sensor_color || !sd || !motor1_ISR || !init_OK
 			|| !motor1_OK || !motor2_OK || !alarma_OK || !sd_OK || !color || !posicion  || !contador)
 
 	{
 		return 0;
+		initHardware();
 	}
 	else
 	{
@@ -393,7 +380,6 @@ int main(void){
 }
 
 
-
 void EINT3_IRQHandler()
 {
 	EXTINT|=(0x01<<3);
@@ -416,3 +402,20 @@ void EINT2_IRQHandler()
 	portEND_SWITCHING_ISR(contexto);
 
 }
+void tomar_semaforos()
+{
+	xSemaphoreTake(init,0);
+	xSemaphoreTake(motor1,0);
+	xSemaphoreTake(motor2,0);
+	xSemaphoreTake(alarma,0);
+	xSemaphoreTake(sensor_color,0);
+	xSemaphoreTake(sd,0);
+	xSemaphoreTake(motor1_ISR,0);
+
+	xSemaphoreTake(init_OK,0);
+	xSemaphoreTake(motor1_OK,0);
+	xSemaphoreTake(motor2_OK,0);
+	xSemaphoreTake(alarma_OK,0);
+	xSemaphoreTake(sd_OK,0);
+}
+

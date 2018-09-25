@@ -21,6 +21,7 @@ void posicionarM2(int pos)
 
 void activar_Alarma()
 {
+
 	SetPIN(ALARM,1);
 
 }
@@ -50,6 +51,8 @@ void prenderLed(int pos)
 
 		if(pos==5)
 			SetPIN(LED5,1);
+
+
 }
 
 
@@ -59,10 +62,7 @@ void moverM1_360()
 
 	vTaskDelay(DELAY);
 
-
 	SetPIN(MOTOR,0);
-
-	vTaskDelay(DELAY);
 
 }
 
@@ -84,19 +84,7 @@ void escribirSD(int* esc)
 
 void Habilitar_Interrupcion()
 {
-	SetPINSEL(INTERRUPT1,1);
-
-	EXTMODE|=(0x01<<3);
-	EXTPOLAR&=~(0x01<<3);
-	ISER0|=(0x01<<21);
-
-
+	int a;
+	a=1;
 }
-void Deshabilitar_Interrupcion()
-{
-	SetPINSEL(INTERRUPT1,0);
-	EXTMODE&=~(0x01<<3);
-	ISER0&=~(0x01<<21);
-}
-
 
