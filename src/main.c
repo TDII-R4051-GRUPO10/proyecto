@@ -1,7 +1,7 @@
 /*
 ===============================================================================
  Name        : Proyecto.c
- Author      : $(author)
+ Author      : Fritzler
  Version     :
  Copyright   : $(copyright)
  Description : main definition
@@ -15,13 +15,7 @@
 
 #include <cr_section_macros.h>
 
-#include "board.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#include "FW_GPIO.h"
-#include "Parcial.h"
+
 #include "header.h"
 #include <stdlib.h>
 
@@ -45,19 +39,38 @@ xQueueHandle 		posicion;
 xQueueHandle 		contador;
 
 
-static void initHardware(void);
 
-
-
-static void initHardware(void)
+void initHardware(void)
 {
     SystemCoreClockUpdate();
 
+	/* ESTO ES UNA PRUEBA QUE HICE CON LEDS A VER SI FUNCIONABA */
 
-    SetPINSEL(MOTOR,0);
+	SetPINSEL(MOTOR,0);
+	SetPINSEL(INTERRUPT1,1);
+	SetPINSEL(INTERRUPT2,1);
+	SetPINSEL(LED1,0);
+	SetPINSEL(LED2,0);
+	SetPINSEL(LED3,0);
+	SetPINSEL(LED4,0);
+	SetPINSEL(LED5,0);
 
-    SetDIR(MOTOR,0);
+	EXTMODE|=(0x01<<3);
+	EXTPOLAR&=~(0x01<<3);
+	ISER0|=(0x01<<21);
 
+	EXTMODE|=(0x01<<2);
+	EXTPOLAR&=~(0x01<<2);
+	ISER0|=(0x01<<20);
+
+
+	SetDIR(MOTOR,GPIO_OUTPUT);
+	SetDIR(LED1,GPIO_OUTPUT);
+	SetDIR(LED2,GPIO_OUTPUT);
+	SetDIR(LED3,GPIO_OUTPUT);
+	SetDIR(LED4,GPIO_OUTPUT);
+	SetDIR(LED5,GPIO_OUTPUT);
+	SetDIR(ALARM,GPIO_OUTPUT);
 
 }
 
@@ -65,6 +78,8 @@ static void initHardware(void)
 
 static void Tarea_Ppal(void *p)
 {
+
+	static int estado_anterior=0;
 	static int estado=INICIO;
 	static int data=NON;
 	static int cont=0;
@@ -81,14 +96,27 @@ static void Tarea_Ppal(void *p)
 		{
 			case INICIO:
 
-				xSemaphoreGive(init);
+				if(estado_anterior==0)
+				{
+					estado_anterior=INICIO;
+					xSemaphoreGive(init);
+				}
 
 				if(xSemaphoreTake(init_OK,DELAY)==pdTRUE)
+				{
 					estado=LECT_COLOR;
+				}
+
+				break;
 
 			case LECT_COLOR:
 
-				xSemaphoreGive(sensor_color);
+
+				if(estado_anterior==INICIO || estado_anterior==MOV_MOTOR1)
+				{
+					estado_anterior=LECT_COLOR;
+					xSemaphoreGive(sensor_color);
+				}
 
 				if(xQueueReceive(color,&data,DELAY)==pdTRUE)
 				{
@@ -114,31 +142,50 @@ static void Tarea_Ppal(void *p)
 					}
 				}
 
+				break;
+
 			case MOV_MOTOR1:
 
-				xSemaphoreGive(motor1);
+				if(estado_anterior==MOV_MOTOR2 || estado_anterior==ALARMA || estado_anterior==LECT_COLOR)
+				{
+					estado_anterior=MOV_MOTOR1;
+					xSemaphoreGive(motor1);
+				}
 
 				if(xSemaphoreTake(motor1_OK,DELAY)==pdTRUE)
 					estado=LECT_COLOR;
 
+				break;
+
 			case MOV_MOTOR2:
 
-				xQueueSend(posicion,&data,DELAY);
+				if(estado_anterior==LECT_COLOR)
+				{
+					estado_anterior=MOV_MOTOR2;
+					xQueueSend(posicion,&data,DELAY);
 
+				}
 				if(xSemaphoreTake(motor2_OK,DELAY)==pdTRUE)
 					estado=MOV_MOTOR1;
 
+				break;
+
 			case ALARMA:
 
-				xSemaphoreGive(alarma);
+				if(estado_anterior==LECT_COLOR)
+				{
+					estado_anterior=ALARMA;
+					xSemaphoreGive(alarma);
+				}
 
 				if(xSemaphoreTake(alarma_OK,DELAY)==pdTRUE)
 				{
-
+					SetPIN(ALARM,0);
 					cont=0;
 					estado=MOV_MOTOR1;
-
 				}
+
+				break;
 		}
 	}
 
@@ -154,7 +201,7 @@ static void Inicializacion (void *p)
 		{
 			Habilitar_Interrupcion();
 
-			xSemaphoreGive(motor1);
+			moverM1_360();
 		}
 	}
 
@@ -168,7 +215,9 @@ static void Motor1(void *p)
 	{
 		if(xSemaphoreTake(motor1,DELAY)==pdTRUE)
 		{
-			moverM1_360();									//driver de giro de 360 grados
+			moverM1_360();
+
+			xSemaphoreGive(motor1_OK);
 		}
 
 	}
@@ -179,11 +228,31 @@ static void Motor1(void *p)
 static void Motor1_STOP(void *p)
 {
 
+	initHardware();
+
+	xSemaphoreTake(init,0);
+	xSemaphoreTake(motor1,0);
+	xSemaphoreTake(motor2,0);
+	xSemaphoreTake(alarma,0);
+	xSemaphoreTake(sensor_color,0);
+	xSemaphoreTake(sd,0);
+	xSemaphoreTake(motor1_ISR,0);
+
+	xSemaphoreTake(init_OK,0);
+	xSemaphoreTake(motor1_OK,0);
+	xSemaphoreTake(motor2_OK,0);
+	xSemaphoreTake(alarma_OK,0);
+	xSemaphoreTake(sd_OK,0);
+
+
 	while(1)
 	{
+
 		if(xSemaphoreTake(motor1_ISR,DELAY)==pdTRUE)		//tomo semáforo de la interrupcion ef hall
 		{
 			pararM1();										//driver de frenado M1
+
+			ISER0&=~(0x01<<21);								//desabilito la interrupcion, el sistema ya se inicializo 
 
 			xSemaphoreGive(init_OK);
 		}
@@ -220,6 +289,8 @@ static void Alarma(void *p)
 		{
 			activar_Alarma();
 		}
+
+
 	}
 
 	vTaskDelete(NULL);
@@ -274,6 +345,7 @@ int main(void){
 	vSemaphoreCreateBinary(sd);
 	vSemaphoreCreateBinary(motor1_ISR);
 
+
 	vSemaphoreCreateBinary(init_OK);
 	vSemaphoreCreateBinary(motor1_OK);
 	vSemaphoreCreateBinary(motor2_OK);
@@ -284,6 +356,9 @@ int main(void){
 	color 	= xQueueCreate(1,sizeof(int));
 	posicion= xQueueCreate(1,sizeof(int));
 	contador= xQueueCreate(5,sizeof(int));
+
+
+	/* REVISO QUE SE HAYAN CREADO LOS SEMAFOROS Y COLAS, TAMBIEN REVISO QUE HAYA ESPACIO PARA LAS TAREAS*/
 
 
 	if(!init || !motor1 || !motor2 || !alarma || ! sensor_color || !sd || !motor1_ISR || !init_OK
@@ -297,7 +372,7 @@ int main(void){
 		if(!xTaskCreate(Tarea_Ppal,(const char *)"tareappal", configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+1, 0)
 		|| !xTaskCreate(Inicializacion,(const char *)"inic",configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+2,0)
 		|| !xTaskCreate(Motor1,(const char *)"motor1",configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+2,0)
-		|| !xTaskCreate(Motor1_STOP,(const char *)"motor1",configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+3,0)
+		|| !xTaskCreate(Motor1_STOP,(const char *)"motor1_stop",configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+3,0)
 		|| !xTaskCreate(Motor2,(const char *)"motor2",configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+2,0)
 		|| !xTaskCreate(Alarma,(const char *)"alarm",configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+2,0)
 		|| !xTaskCreate(Sensor_Color,(const char *)"sensor",configMINIMAL_STACK_SIZE*2, NULL, tskIDLE_PRIORITY+2,0)
@@ -317,3 +392,27 @@ int main(void){
     return 0 ;
 }
 
+
+
+void EINT3_IRQHandler()
+{
+	EXTINT|=(0x01<<3);
+
+	portBASE_TYPE contexto;
+
+	xSemaphoreGiveFromISR(motor1_ISR,&contexto);
+
+	portEND_SWITCHING_ISR(contexto);
+}
+
+void EINT2_IRQHandler()
+{
+	EXTINT|=(0x01<<2);
+
+	portBASE_TYPE contexto;
+
+	xSemaphoreGiveFromISR(alarma_OK,&contexto);
+
+	portEND_SWITCHING_ISR(contexto);
+
+}
