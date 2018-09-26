@@ -1,10 +1,15 @@
 #include "header.h"
 
-
+#include <motor.h>
 
 void pararM1()
 {
+<<<<<<< HEAD
 	 SetPIN(MOTOR,0);
+=======
+	//ACA LA IDEA ES, SI doSteps() ES UNA TAREA DEL SO, PODER BLOQUEARLA ASI NO PIERDE LOS PASOS QUE LE QUEDAN HACER
+	//Y QUE DESPUES PUEDA SEGUIR CON LOS PASOS QUE LE QUEDAN CUANDO SE LA DESBLOQUEA.
+>>>>>>> master
 }
 
 void posicionarM2(int pos)
@@ -55,6 +60,7 @@ void prenderLed(int pos)
 
 void moverM1_360()
 {
+<<<<<<< HEAD
 	SetPIN(MOTOR,1);
 
 	vTaskDelay(DELAY);
@@ -64,6 +70,11 @@ void moverM1_360()
 
 	vTaskDelay(DELAY);
 
+=======
+	//esto es solo una idea
+	//los motores son de 48 pasos cada 360°
+	doSteps(motor[0], HORARIO, 48);
+>>>>>>> master
 }
 
 int muestrearColor()

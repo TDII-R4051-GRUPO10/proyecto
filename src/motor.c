@@ -10,23 +10,38 @@
 
 void initMotores()
 {
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO,M1STEPport,M1STEPin);
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO,M1DIRport,M1DIRpin);
+	motor[0].stepPort = M0STEPport;
+	motor[0].stepPin = M0STEPpin;
+	motor[0].dirPort = M0STEPport;
+	motor[0].dirPin = M0STEPpin;
 
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO,M2STEPport,M2STEPin);
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO,M2DIRport,M2DIRpin);
+	motor[1].stepPort = M1STEPport;
+	motor[1].stepPin = M1STEPpin;
+	motor[1].dirPort = M1STEPport;
+	motor[1].dirPin = M1STEPpin;
+
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, motor[0].stepPort, motor[0].stepPin);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, motor[0].dirPort, motor[0].dirPin);
+
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, motor[1].stepPort, motor[1].stepPin);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, motor[1].dirPort, motor[1].dirPin);
 }
 
 //ACA TE DAS CUENTA QUE ES MEJOR USAR UNA ESTRUCTURA DE PINES STEP Y DIR DE MOTOR
 //PARA HACER UNA SOLA FUNCION DOSTEPS QUE LE MANDAS EL MOTOR QUE QUERES QUE SE MUEVA. SALU2
-//MAS ADELANTE BORRAR A4988 PORQUE ESTAN AL PEDO ESOS ARCHIVOS
-void doSteps(int dir, int n)
+
+//ESTO PARA MI DEBERIA SER UNA TAREA PARA QUE SE PUEDA BLOQUEAR PARA PARAR EL GIRO
+void doSteps(typedef_motor m, int dir, int n)
 {
-	Chip_GPIO_SetPinState(LPC_GPIO);
+	int i;
+	Chip_GPIO_SetPinState(LPC_GPIO, m.dirPort, m.dirPin, dir);
 
-	Chip_GPIO_SetPinOutHigh();
-
-	Chip_GPIO_SetPinOutLow();
+	for(i=0;i<n;i++)
+	{
+		Chip_GPIO_SetPinOutHigh(LPC_GPIO, m.stepPort, m.stepPin);
+		//aca hay que generar un delay para marcar la frecuencia de giro
+		Chip_GPIO_SetPinOutLow(LPC_GPIO, m.stepPort, m.stepPin);
+	}
 }
 
 //IMPLEMENTACIÓN DE FUNCIONES PARA EL MOTOR QUE REPARTE EN VASOS
