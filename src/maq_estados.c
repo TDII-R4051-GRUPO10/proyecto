@@ -1,9 +1,6 @@
 
 
 
-#define pepe 78
-
-
 #define error_max 10
 
 enum {inicial, medicion,amarillo,rojo,azul,marron,verde};
