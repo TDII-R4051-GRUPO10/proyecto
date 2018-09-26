@@ -27,6 +27,7 @@
 #define M1DIRpin	23
 
 enum {AMARILLO = 0, ROJO, AZUL, MARRON, VERDE};
+enum {HORARIO = 0, ANTIHORARIO};
 
 typedef struct
 {
@@ -49,7 +50,7 @@ typedef_motor motor[NmOTORES];
 
 void initMotores(void);
 
-void doSteps(int dir, int n);
+void doSteps(typedef_motor m, int dir, int n);
 
 //FUNCIONES PARA EL MOTOR QUE REPARTE EN VASOS
 

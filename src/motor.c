@@ -29,19 +29,18 @@ void initMotores()
 
 //ACA TE DAS CUENTA QUE ES MEJOR USAR UNA ESTRUCTURA DE PINES STEP Y DIR DE MOTOR
 //PARA HACER UNA SOLA FUNCION DOSTEPS QUE LE MANDAS EL MOTOR QUE QUERES QUE SE MUEVA. SALU2
-//MAS ADELANTE BORRAR A4988 PORQUE ESTAN AL PEDO ESOS ARCHIVOS
 
 //ESTO PARA MI DEBERIA SER UNA TAREA PARA QUE SE PUEDA BLOQUEAR PARA PARAR EL GIRO
-void doSteps(typedef_motor motor, int dir, int n)
+void doSteps(typedef_motor m, int dir, int n)
 {
 	int i;
-	Chip_GPIO_SetPinState(LPC_GPIO, motor[0].dirPort, motor[0].dirPin, dir);
+	Chip_GPIO_SetPinState(LPC_GPIO, m.dirPort, m.dirPin, dir);
 
 	for(i=0;i<n;i++)
 	{
-		Chip_GPIO_SetPinOutHigh(LPC_GPIO, motor[0].stepPort, motor[0].stepPin);
+		Chip_GPIO_SetPinOutHigh(LPC_GPIO, m.stepPort, m.stepPin);
 		//aca hay que generar un delay para marcar la frecuencia de giro
-		Chip_GPIO_SetPinOutLow(LPC_GPIO, motor[0].stepPort, motor[0].stepPin);
+		Chip_GPIO_SetPinOutLow(LPC_GPIO, m.stepPort, m.stepPin);
 	}
 }
 
