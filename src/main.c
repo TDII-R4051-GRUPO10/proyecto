@@ -106,39 +106,8 @@ void initHardware(void)
 {
     SystemCoreClockUpdate();
 
-	SetPINSEL(MOTOR,0);
-	SetPINSEL(INTERRUPT2,1);
-//	SetPINSEL(INTERRUPT3,1);
-	SetPINSEL(LED1,0);
-	SetPINSEL(LED2,0);
-	SetPINSEL(LED3,0);
-	SetPINSEL(LED4,0);
-	SetPINSEL(LED5,0);
-
-
-	EXTMODE|=(0x01<<2);
-	EXTPOLAR&=~(0x01<<2);
-	ISER0|=(0x01<<20);
-
-
-	SetDIR(MOTOR,GPIO_OUTPUT);
-	SetDIR(LED1,GPIO_OUTPUT);
-	SetDIR(LED2,GPIO_OUTPUT);
-	SetDIR(LED3,GPIO_OUTPUT);
-	SetDIR(LED4,GPIO_OUTPUT);
-	SetDIR(LED5,GPIO_OUTPUT);
-	SetDIR(ALARM,GPIO_OUTPUT);
-
-
-	SetPIN(LED1,0);
-	SetPIN(LED2,0);
-	SetPIN(LED3,0);
-	SetPIN(LED4,0);
-	SetPIN(LED5,0);
-
-	SetPIN(ALARM,0);
-
-
+	initMotores();
+	
 }
 
 
