@@ -242,12 +242,14 @@ static void Tarea_Ppal(void *p)
 				if(estado_anterior==LECT_COLOR)
 				{
 					estado_anterior=ALARMA;
+					Habilitar_Interrupcion(ALARMA);
 					xSemaphoreGive(alarma);
 				}
 
 				if(xSemaphoreTake(alarma_OK,DELAY)==pdTRUE)
 				{
 					SetPIN(ALARM,0);
+					Deshabilitar_Interrupcion(ALARMA);
 					cont=0;
 					estado=MOV_MOTOR1;
 				}
@@ -266,7 +268,7 @@ static void Inicializacion (void *p)
 	{
 		if(xSemaphoreTake(init,DELAY)==pdTRUE)
 		{
-			Habilitar_Interrupcion();
+			Habilitar_Interrupcion(MOV_MOTOR1);
 
 			moverM1_360();
 		}
@@ -304,7 +306,7 @@ static void Motor1_STOP(void *p)
 		{
 			pararM1();										//driver de frenado M1
 
-			Deshabilitar_Interrupcion();
+			Deshabilitar_Interrupcion(MOV_MOTOR1);
 
 			xSemaphoreGive(init_OK);
 		}

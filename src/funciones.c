@@ -92,22 +92,68 @@ void escribirSD(int* esc)
 
 
 }
-
-void Habilitar_Interrupcion()
+void Habilitar_Interrupcion(int e)
 {
-	SetPINSEL(INTERRUPT1,1);
+	switch(e)
+	{
+		case MOV_MOTOR1:
 
-	EXTMODE|=(0x01<<3);
-	EXTPOLAR&=~(0x01<<3);
-	ISER0|=(0x01<<21);
+			SetPINSEL(INTERRUPT_M1,1);
 
+			EXTMODE|=(0x01<<3);
+			EXTPOLAR&=~(0x01<<3);
+			ISER0|=(0x01<<21);
+
+			break;
+
+
+		case MOV_MOTOR2:
+
+			//habilito interrupcion m2
+
+			break;
+
+		case ALARMA:
+
+			SetPINSEL(INTERRUPT_A,1);
+
+			EXTMODE|=(0x01<<2);
+			EXTPOLAR&=~(0x01<<2);
+			ISER0|=(0x01<<20);
+
+			break;
+
+	}
 
 }
-void Deshabilitar_Interrupcion()
+
+void Deshabilitar_Interrupcion(int e)
 {
-	SetPINSEL(INTERRUPT1,0);
-	EXTMODE&=~(0x01<<3);
-	ISER0&=~(0x01<<21);
+	switch(e)
+	{
+		case MOV_MOTOR1:
+
+			SetPINSEL(INTERRUPT_M1,0);
+			EXTMODE&=~(0x01<<3);
+			ISER0&=~(0x01<<21);
+
+			break;
+
+
+		case MOV_MOTOR2:
+
+			//deshabilito interrupcion m2
+
+			break;
+
+		case ALARMA:
+
+			SetPINSEL(INTERRUPT_A,0);
+			EXTMODE&=~(0x01<<2);
+			ISER0&=~(0x01<<20);
+
+
+			break;
+
+	}
 }
-
-
