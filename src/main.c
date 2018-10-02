@@ -107,7 +107,11 @@ void initHardware(void)
     SystemCoreClockUpdate();
 
 	initMotores();
-	
+
+	SetPINSEL(ALARM,0);
+	SetDIR(ALARM,GPIO_OUTPUT);
+	SetPIN(ALARM,0);
+
 }
 
 
@@ -141,6 +145,8 @@ static void Tarea_Ppal(void *p)
 				if(xSemaphoreTake(init_OK,DELAY)==pdTRUE)
 				{
 					estado=LECT_COLOR;
+					
+
 				}
 
 				break;
@@ -277,7 +283,10 @@ static void Motor1_STOP(void *p)
 
 			Deshabilitar_Interrupcion(MOV_MOTOR1);
 
-			xSemaphoreGive(init_OK);
+			Habilitar_Interrupcion(MOV_MOTOR2);
+
+			moverM2();										//muevo el motor2 en un sentido ininterrumpidamente esperando el final de carrera (interrupcion)
+
 		}
 	}
 
@@ -289,14 +298,17 @@ static void Motor2(void *p)
 {
 
 	static int pos=NON;
+	static int pos_anterior=ROJO;           //cuando inicializamos el motor2 queda posicionado en el color rojo
 
 	while(1)
 	{
 		if(xQueueReceive(posicion,&pos,DELAY)==pdTRUE)
-		{
-			posicionarM2(pos);
-
+		{		
+			posicionarM2(pos,pos_anterior);						//la funcion necesita saber la posicion del motor y hacia que posicion ir
+	
 			xSemaphoreGive(motor2_OK);
+
+			pos_anterior=pos;
 		}
 	}
 
@@ -433,6 +445,20 @@ void EINT2_IRQHandler()
 	xSemaphoreGiveFromISR(alarma_OK,&contexto);
 
 	portEND_SWITCHING_ISR(contexto);
+
+}
+void EINT1_IRQHandler()
+{
+	EXTINT|=(0x01<<1);
+
+	pararM2();
+
+	portBASE_TYPE contexto;
+
+	xSemaphoreGiveFromISR(init_OK,&contexto);
+
+	portEND_SWITCHING_ISR(contexto);
+
 
 }
 void tomar_semaforos()

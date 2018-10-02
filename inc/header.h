@@ -22,15 +22,16 @@
 #define VERDE		4
 #define NARANJA		5
 
-#define INTERRUPT1  2,13
-#define INTERRUPT2  2,12
-#define MOTOR		0,22
-#define	LED1		0,21
-#define LED2		0,3
-#define LED3		0,2
-#define LED4		1,31
-#define LED5		1,30
-#define ALARM       0,26
+#define INTERRUPT_M1    2,13
+#define INTERRUPT_M2    2,11
+#define INTERRUPT_A     2,12
+#define MOTOR		    0,22
+#define	LED1		    0,21
+#define LED2		    0,3
+#define LED3		    0,2
+#define LED4		    1,31
+#define LED5		    1,30
+#define ALARM           0,26
 
 void pararM1();
 void posicionarM2(int);
