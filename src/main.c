@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+//<<<<<<< HEAD
 /*
 ===============================================================================
  Name        : Proyecto.c
@@ -8,7 +8,7 @@
  Description : main definition
 ===============================================================================
 */
-=======
+//=======
 /* Copyright 2015, Pablo Ridolfi
  * All rights reserved.
  *
@@ -57,7 +57,6 @@
  ** @{ */
 
 /*==================[inclusions]=============================================*/
-//bebe bebu
 #include "board.h"
 
 #include "FreeRTOS.h"
@@ -68,7 +67,7 @@
 #include "main.h"
 #include "header.h"
 
->>>>>>> master
+//>>>>>>> master
 
 #ifdef __USE_CMSIS
 #include "LPC17xx.h"
