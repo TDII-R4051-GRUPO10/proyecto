@@ -106,38 +106,11 @@ void initHardware(void)
 {
     SystemCoreClockUpdate();
 
-	SetPINSEL(MOTOR,0);
-	SetPINSEL(INTERRUPT2,1);
-//	SetPINSEL(INTERRUPT3,1);
-	SetPINSEL(LED1,0);
-	SetPINSEL(LED2,0);
-	SetPINSEL(LED3,0);
-	SetPINSEL(LED4,0);
-	SetPINSEL(LED5,0);
+	initMotores();
 
-
-	EXTMODE|=(0x01<<2);
-	EXTPOLAR&=~(0x01<<2);
-	ISER0|=(0x01<<20);
-
-
-	SetDIR(MOTOR,GPIO_OUTPUT);
-	SetDIR(LED1,GPIO_OUTPUT);
-	SetDIR(LED2,GPIO_OUTPUT);
-	SetDIR(LED3,GPIO_OUTPUT);
-	SetDIR(LED4,GPIO_OUTPUT);
-	SetDIR(LED5,GPIO_OUTPUT);
+	SetPINSEL(ALARM,0);
 	SetDIR(ALARM,GPIO_OUTPUT);
-
-
-	SetPIN(LED1,0);
-	SetPIN(LED2,0);
-	SetPIN(LED3,0);
-	SetPIN(LED4,0);
-	SetPIN(LED5,0);
-
 	SetPIN(ALARM,0);
-
 
 }
 
@@ -172,6 +145,8 @@ static void Tarea_Ppal(void *p)
 				if(xSemaphoreTake(init_OK,DELAY)==pdTRUE)
 				{
 					estado=LECT_COLOR;
+					
+
 				}
 
 				break;
@@ -242,12 +217,14 @@ static void Tarea_Ppal(void *p)
 				if(estado_anterior==LECT_COLOR)
 				{
 					estado_anterior=ALARMA;
+					Habilitar_Interrupcion(ALARMA);
 					xSemaphoreGive(alarma);
 				}
 
 				if(xSemaphoreTake(alarma_OK,DELAY)==pdTRUE)
 				{
 					SetPIN(ALARM,0);
+					Deshabilitar_Interrupcion(ALARMA);
 					cont=0;
 					estado=MOV_MOTOR1;
 				}
@@ -266,7 +243,7 @@ static void Inicializacion (void *p)
 	{
 		if(xSemaphoreTake(init,DELAY)==pdTRUE)
 		{
-			Habilitar_Interrupcion();
+			Habilitar_Interrupcion(MOV_MOTOR1);
 
 			moverM1_360();
 		}
@@ -304,9 +281,18 @@ static void Motor1_STOP(void *p)
 		{
 			pararM1();										//driver de frenado M1
 
-			Deshabilitar_Interrupcion();
+			Deshabilitar_Interrupcion(MOV_MOTOR1);
 
+			Habilitar_Interrupcion(MOV_MOTOR2);
+
+			moverM2();										//muevo el motor2 en un sentido ininterrumpidamente esperando el final de carrera (interrupcion)
+
+<<<<<<< HEAD
 			xSemaphoreGive(init_OK);
+
+
+=======
+>>>>>>> abe1d04bd390a67058054ec50f271df54b73d71a
 		}
 	}
 
@@ -318,14 +304,17 @@ static void Motor2(void *p)
 {
 
 	static int pos=NON;
+	static int pos_anterior=ROJO;           //cuando inicializamos el motor2 queda posicionado en el color rojo
 
 	while(1)
 	{
 		if(xQueueReceive(posicion,&pos,DELAY)==pdTRUE)
-		{
-			posicionarM2(pos);
-
+		{		
+			posicionarM2(pos,pos_anterior);						//la funcion necesita saber la posicion del motor y hacia que posicion ir
+	
 			xSemaphoreGive(motor2_OK);
+
+			pos_anterior=pos;
 		}
 	}
 
@@ -462,6 +451,20 @@ void EINT2_IRQHandler()
 	xSemaphoreGiveFromISR(alarma_OK,&contexto);
 
 	portEND_SWITCHING_ISR(contexto);
+
+}
+void EINT1_IRQHandler()
+{
+	EXTINT|=(0x01<<1);
+
+	pararM2();
+
+	portBASE_TYPE contexto;
+
+	xSemaphoreGiveFromISR(init_OK,&contexto);
+
+	portEND_SWITCHING_ISR(contexto);
+
 
 }
 void tomar_semaforos()

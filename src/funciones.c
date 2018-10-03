@@ -4,23 +4,23 @@
 
 void pararM1()
 {
-<<<<<<< HEAD
-	 SetPIN(MOTOR,0);
-=======
+
 	//ACA LA IDEA ES, SI doSteps() ES UNA TAREA DEL SO, PODER BLOQUEARLA ASI NO PIERDE LOS PASOS QUE LE QUEDAN HACER
 	//Y QUE DESPUES PUEDA SEGUIR CON LOS PASOS QUE LE QUEDAN CUANDO SE LA DESBLOQUEA.
->>>>>>> master
-}
 
+}
+void moverM2()
+{
+	//muevo ininterrumpidamente paso a paso el motor 2 en un sentido de giro esperando la interrupcion del final de carrera
+
+}
+void pararM2()
+{
+	//paro el motor2
+}
 void posicionarM2(int pos)
 {
-	apagarLeds();
 
-	vTaskDelay(DELAY);
-
-	prenderLed(pos);
-
-	vTaskDelay(DELAY);
 
 }
 
@@ -30,51 +30,11 @@ void activar_Alarma()
 
 }
 
-void apagarLeds()
-{
-	SetPIN(LED1,0);
-	SetPIN(LED2,0);
-	SetPIN(LED3,0);
-	SetPIN(LED4,0);
-	SetPIN(LED5,0);
-}
-
-void prenderLed(int pos)
-{
-		if(pos==1)
-			SetPIN(LED1,1);
-
-		if(pos==2)
-			SetPIN(LED2,1);
-
-		if(pos==3)
-			SetPIN(LED3,1);
-
-		if(pos==4)
-			SetPIN(LED4,1);
-
-		if(pos==5)
-			SetPIN(LED5,1);
-}
-
-
 void moverM1_360()
 {
-<<<<<<< HEAD
-	SetPIN(MOTOR,1);
-
-	vTaskDelay(DELAY);
-
-
-	SetPIN(MOTOR,0);
-
-	vTaskDelay(DELAY);
-
-=======
 	//esto es solo una idea
 	//los motores son de 48 pasos cada 360°
 	doSteps(motor[0], HORARIO, 48);
->>>>>>> master
 }
 
 int muestrearColor()
@@ -93,21 +53,75 @@ void escribirSD(int* esc)
 
 }
 
-void Habilitar_Interrupcion()
+void Habilitar_Interrupcion(int e)
 {
-	SetPINSEL(INTERRUPT1,1);
+	switch(e)
+	{
+		case MOV_MOTOR1:
 
-	EXTMODE|=(0x01<<3);
-	EXTPOLAR&=~(0x01<<3);
-	ISER0|=(0x01<<21);
+			SetPINSEL(INTERRUPT_M1,1);
 
+			EXTMODE|=(0x01<<3);
+			EXTPOLAR&=~(0x01<<3);
+			ISER0|=(0x01<<21);
+
+			break;
+
+
+		case MOV_MOTOR2:
+
+			SetPINSEL(INTERRUPT_M2,1);
+
+			EXTMODE|=(0x01<<1);
+			EXTPOLAR&=~(0x01<<1);
+			ISER0|=(0x01<<19);
+
+			break;
+
+		case ALARMA:
+
+			SetPINSEL(INTERRUPT_A,1);
+
+			EXTMODE|=(0x01<<2);
+			EXTPOLAR&=~(0x01<<2);
+			ISER0|=(0x01<<20);
+
+			break;
+
+	}
 
 }
-void Deshabilitar_Interrupcion()
+void Deshabilitar_Interrupcion(int e)
 {
-	SetPINSEL(INTERRUPT1,0);
-	EXTMODE&=~(0x01<<3);
-	ISER0&=~(0x01<<21);
-}
+	switch(e)
+	{
+		case MOV_MOTOR1:
 
+			SetPINSEL(INTERRUPT_M1,0);
+			EXTMODE&=~(0x01<<3);
+			ISER0&=~(0x01<<21);
+
+			break;
+
+
+		case MOV_MOTOR2:
+
+			SetPINSEL(INTERRUPT_M2,0);
+			EXTMODE&=~(0x01<<1);
+			ISER0&=~(0x01<<19);
+
+
+			break;
+
+		case ALARMA:
+
+			SetPINSEL(INTERRUPT_A,0);
+			EXTMODE&=~(0x01<<2);
+			ISER0&=~(0x01<<20);
+
+
+			break;
+
+	}
+}
 
