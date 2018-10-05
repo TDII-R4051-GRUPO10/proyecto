@@ -45,7 +45,7 @@
 
 // N:pasos del motor, PASO_MINIMO: movimiento minimo en grados que puede realizar el motor
 
-#define N           
+#define N                   48
 #define PASO_MINIMO         360/N
 #define HORARIO             0
 #define ANTI_HORARIO        1
