@@ -95,7 +95,7 @@ xSemaphoreHandle 	motor2_OK;
 xSemaphoreHandle 	alarma_OK;
 xSemaphoreHandle 	sd_OK;
 
-xQueueHandle 		color;
+xQueueHandle 		QueueColor;
 xQueueHandle 		posicion;
 xQueueHandle 		contador;
 
@@ -110,6 +110,8 @@ void initHardware(void)
 	SetPINSEL(ALARM,0);
 	SetDIR(ALARM,GPIO_OUTPUT);
 	SetPIN(ALARM,0);
+
+  init_color_sensor();
 
 }
 
@@ -144,7 +146,7 @@ static void Tarea_Ppal(void *p)
 				if(xSemaphoreTake(init_OK,DELAY)==pdTRUE)
 				{
 					estado=LECT_COLOR;
-					
+
 
 				}
 
@@ -302,9 +304,9 @@ static void Motor2(void *p)
 	while(1)
 	{
 		if(xQueueReceive(posicion,&pos,DELAY)==pdTRUE)
-		{		
+		{
 			posicionarM2(pos,pos_anterior);						//la funcion necesita saber la posicion del motor y hacia que posicion ir
-	
+
 			xSemaphoreGive(motor2_OK);
 
 			pos_anterior=pos;
@@ -330,22 +332,24 @@ static void Alarma(void *p)
 	vTaskDelete(NULL);
 }
 
-static void Sensor_Color(void *p)
+void Sensor_Color (void *pvParameters)
 {
+  enum colors color = nada;
+	int R, V, A;
 
-	static int dato;
+	while(1) {
+		xSemaphoreTake(sensor_color, portMAX_DELAY);
+		activa_sensor();
 
-	while(1)
-	{
-		if(xSemaphoreTake(sensor_color,DELAY)==pdTRUE)
-		{
-			dato=muestrearColor();
+		R = sensa_rojo();
+		V = sensa_verde();
+		A = sensa_azul();
 
-			xQueueSend(color,&dato,DELAY);
-		}
+		//faltas ifs para determinar colores
+		color=yellow;
+
+		xQueueSend( QueueColor, &color, 0 );
 	}
-
-	vTaskDelete(NULL);
 }
 
 static void SD(void *p)
@@ -386,9 +390,9 @@ int main(void){
 	vSemaphoreCreateBinary(sd_OK);
 
 
-	color 	= xQueueCreate(1,sizeof(int));
-	posicion= xQueueCreate(1,sizeof(int));
-	contador= xQueueCreate(5,sizeof(int));
+	QueueColor = xQueueCreate(1,sizeof(int));
+	posicion   = xQueueCreate(1,sizeof(int));
+	contador   = xQueueCreate(5,sizeof(int));
 
 
 	if(!init || !motor1 || !motor2 || !alarma || ! sensor_color || !sd || !motor1_ISR || !init_OK
@@ -476,4 +480,3 @@ void tomar_semaforos()
 	xSemaphoreTake(alarma_OK,0);
 	xSemaphoreTake(sd_OK,0);
 }
-

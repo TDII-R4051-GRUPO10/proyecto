@@ -55,6 +55,8 @@ extern "C" {
 
 /*==================[typedef]================================================*/
 
+enum colors{nada, purple, yellow, green, orange, red};
+
 /*==================[external data declaration]==============================*/
 
 /*==================[external functions declaration]=========================*/
