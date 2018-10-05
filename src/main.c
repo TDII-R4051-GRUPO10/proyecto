@@ -59,12 +59,10 @@
 /*==================[inclusions]=============================================*/
 //bebe bebu
 #include "board.h"
-
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
 #include "semphr.h"
-
 #include "main.h"
 #include "header.h"
 
@@ -285,7 +283,7 @@ static void Motor1_STOP(void *p)
 
 			Habilitar_Interrupcion(MOV_MOTOR2);
 
-			moverM2();										//muevo el motor2 en un sentido ininterrumpidamente esperando el final de carrera (interrupcion)
+			moverM2(ANTI_HORARIO,(180/PASO_MINIMO));			//muevo el motor2 en un sentido ininterrumpidamente esperando el final de carrera (interrupcion)
 
 		}
 	}
@@ -298,13 +296,13 @@ static void Motor2(void *p)
 {
 
 	static int pos=NON;
-	static int pos_anterior=ROJO;           //cuando inicializamos el motor2 queda posicionado en el color rojo
+	static int pos_anterior=ROJO;           				//cuando inicializamos el motor2 queda posicionado en el color rojo
 
 	while(1)
 	{
 		if(xQueueReceive(posicion,&pos,DELAY)==pdTRUE)
 		{		
-			posicionarM2(pos,pos_anterior);						//la funcion necesita saber la posicion del motor y hacia que posicion ir
+			posicionarM2(pos,pos_anterior);					//la funcion necesita saber la posicion del motor y hacia que posicion ir
 	
 			xSemaphoreGive(motor2_OK);
 

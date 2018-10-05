@@ -9,18 +9,35 @@ void pararM1()
 	//Y QUE DESPUES PUEDA SEGUIR CON LOS PASOS QUE LE QUEDAN CUANDO SE LA DESBLOQUEA.
 
 }
-void moverM2()
+void moverM2(int sentido,int pasos)
 {
-	//muevo ininterrumpidamente paso a paso el motor 2 en un sentido de giro esperando la interrupcion del final de carrera
-
+	//muevo MOTOR 2 en un sentido una cantidad de pasos
 }
+
+
 void pararM2()
 {
+
 	//paro el motor2
 }
-void posicionarM2(int pos)
-{
 
+//IMPORTANTE: Los depositos de colores están separados a 30 grados entre si
+
+
+void posicionarM2(int pos, int pos_anterior)
+{
+	if((pos_anterior-pos)<0)
+	{
+		moverM2(HORARIO,(pos-pos_anterior)*(30/PASO_MINIMO));
+
+	}
+	else if((pos_anterior-pos)>0)
+	{
+		moverM2(ANTI_HORARIO,(pos_anterior-pos)*(30/PASO_MINIMO));
+	
+	}
+
+	//Si es 0 no realiza ninguna accion (no es necesario mover el motor)
 
 }
 

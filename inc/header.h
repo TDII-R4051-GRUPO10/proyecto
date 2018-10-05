@@ -25,21 +25,44 @@
 #define INTERRUPT_M1    2,13
 #define INTERRUPT_M2    2,11
 #define INTERRUPT_A     2,12
-#define MOTOR		    0,22
-#define	LED1		    0,21
-#define LED2		    0,3
-#define LED3		    0,2
-#define LED4		    1,31
-#define LED5		    1,30
 #define ALARM           0,26
 
+
+//pines del display:
+
+#define RS
+#define R/W
+#define ENA
+#define DB0
+#define DB1
+#define DB2
+#define DB3
+#define DB4
+#define DB5
+#define DB6
+#define DB7
+
+
+// N:pasos del motor, PASO_MINIMO: movimiento minimo en grados que puede realizar el motor
+
+#define N           
+#define PASO_MINIMO         360/N
+#define HORARIO             0
+#define ANTI_HORARIO        1
+
+
+
+
 void pararM1();
-void posicionarM2(int);
+void pararM2();
+void moverM2(int,int);
+void posicionarM2(int,int);
 void activar_Alarma();
 void moverM1_360();
 int  muestrearColor();
 void escribirSD(int*);
 void Habilitar_Interrupcion();
+void Deshabilitar_Interrupcion();
 void initHardware();
 void apagarLeds();
 void prenderLed();
