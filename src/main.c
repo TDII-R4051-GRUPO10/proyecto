@@ -57,6 +57,7 @@
  ** @{ */
 
 /*==================[inclusions]=============================================*/
+
 #include "board.h"
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
@@ -65,7 +66,7 @@
 #include "main.h"
 #include "header.h"
 
-//>>>>>>> master
+
 
 #ifdef __USE_CMSIS
 #include "LPC17xx.h"
@@ -103,11 +104,12 @@ void initHardware(void)
 {
     SystemCoreClockUpdate();
 
+    initDisplay();
+
 	initMotores();
 
-	SetPINSEL(ALARM,0);
-	SetDIR(ALARM,GPIO_OUTPUT);
-	SetPIN(ALARM,0);
+    SetPINSEL(ALARM,0);
+    SetDIR(ALARM,GPIO_OUTPUT);
 
 }
 
@@ -120,12 +122,6 @@ static void Tarea_Ppal(void *p)
 	static int estado=INICIO;
 	static int data=NON;
 	static int cont=0;
-	static int i;
-
-	static int colores[5];
-
-	for(i=0;i<5;i++)
-		colores[i]=0;
 
 	while(1)
 	{
@@ -142,7 +138,7 @@ static void Tarea_Ppal(void *p)
 				if(xSemaphoreTake(init_OK,DELAY)==pdTRUE)
 				{
 					estado=LECT_COLOR;
-					
+
 
 				}
 
@@ -172,9 +168,7 @@ static void Tarea_Ppal(void *p)
 					{
 						cont=0;
 
-						colores[data-1]++;
-
-						xQueueSend(contador,&colores,DELAY);
+						xQueueSend(contador,&data,DELAY);
 
 						estado=MOV_MOTOR2;
 
@@ -300,9 +294,9 @@ static void Motor2(void *p)
 	while(1)
 	{
 		if(xQueueReceive(posicion,&pos,DELAY)==pdTRUE)
-		{		
+		{
 			posicionarM2(pos,pos_anterior);					//la funcion necesita saber la posicion del motor y hacia que posicion ir
-	
+
 			xSemaphoreGive(motor2_OK);
 
 			pos_anterior=pos;
@@ -349,13 +343,15 @@ static void Sensor_Color(void *p)
 static void SD(void *p)
 {
 
-	int cont[5];
+	int cont;
 
 	while(1)
 	{
 		if(xQueueReceive(contador,&cont,DELAY)==pdTRUE)
 		{
 			escribirSD(cont);
+
+			refrescarDisplay(cont);
 
 		}
 	}
@@ -386,7 +382,7 @@ int main(void){
 
 	color 	= xQueueCreate(1,sizeof(int));
 	posicion= xQueueCreate(1,sizeof(int));
-	contador= xQueueCreate(5,sizeof(int));
+	contador= xQueueCreate(1,sizeof(int));
 
 
 	if(!init || !motor1 || !motor2 || !alarma || ! sensor_color || !sd || !motor1_ISR || !init_OK
@@ -456,7 +452,6 @@ void EINT1_IRQHandler()
 
 	portEND_SWITCHING_ISR(contexto);
 
-
 }
 void tomar_semaforos()
 {
@@ -474,4 +469,7 @@ void tomar_semaforos()
 	xSemaphoreTake(alarma_OK,0);
 	xSemaphoreTake(sd_OK,0);
 }
+
+
+
 
