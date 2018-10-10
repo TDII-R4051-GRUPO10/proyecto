@@ -8,6 +8,8 @@
 
 #include <motor.h>
 
+int cuentapasos;
+
 void initMotores()
 {
 	motor[0].stepPort = M0STEPport;
@@ -25,6 +27,49 @@ void initMotores()
 
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, motor[1].stepPort, motor[1].stepPin);
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, motor[1].dirPort, motor[1].dirPin);
+
+	/* Timer */
+	Chip_TIMER_Init(LPC_TIMER1);
+	Chip_TIMER_PrescaleSet(LPC_TIMER1,Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_TIMER1) / 1000000 - 1);
+
+	/* Match 0 (period) */
+	Chip_TIMER_MatchEnableInt(LPC_TIMER1, 0);
+	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER1, 0);
+	Chip_TIMER_StopOnMatchDisable(LPC_TIMER1, 0);
+	Chip_TIMER_SetMatch(LPC_TIMER1, 0, 1000);
+
+	/*
+	 * Match 1 (duty)
+	Chip_TIMER_MatchEnableInt(LPC_TIMER1, 1);
+	Chip_TIMER_ResetOnMatchDisable(LPC_TIMER1, 1);
+	Chip_TIMER_StopOnMatchDisable(LPC_TIMER1, 1);
+	Chip_TIMER_SetMatch(LPC_TIMER1, 1, 100);
+	*/
+
+	Chip_TIMER_Reset(LPC_TIMER1);
+	Chip_TIMER_Enable(LPC_TIMER1);
+
+	NVIC_EnableIRQ(TIMER1_IRQn);
+}
+
+void TIMER1_IRQHandler(void)
+{
+   if (Chip_TIMER_MatchPending(LPC_TIMER1, 0))
+   {
+      Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
+
+      if(cuentapasos>0)
+      {
+    	  Chip_GPIO_SetPinToggle(LPC_GPIO, m.stepPort, m.stepPin);
+    	  cuentapasos--;
+      }
+   }
+   /*
+   if (Chip_TIMER_MatchPending(LPC_TIMER1, 1)) {
+      Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
+      Board_LED_Set(0, 0);
+   }
+   */
 }
 
 //ACA TE DAS CUENTA QUE ES MEJOR USAR UNA ESTRUCTURA DE PINES STEP Y DIR DE MOTOR
@@ -33,15 +78,11 @@ void initMotores()
 //ESTO PARA MI DEBERIA SER UNA TAREA PARA QUE SE PUEDA BLOQUEAR PARA PARAR EL GIRO
 void doSteps(typedef_motor m, int dir, int n)
 {
-	int i;
 	Chip_GPIO_SetPinState(LPC_GPIO, m.dirPort, m.dirPin, dir);
 
-	for(i=0;i<n;i++)
-	{
-		Chip_GPIO_SetPinOutHigh(LPC_GPIO, m.stepPort, m.stepPin);
-		//aca hay que generar un delay para marcar la frecuencia de giro
-		Chip_GPIO_SetPinOutLow(LPC_GPIO, m.stepPort, m.stepPin);
-	}
+    cuentapasos = n;
+    Chip_TIMER_Reset(LPC_TIMER1);
+    Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
 }
 
 //IMPLEMENTACIÓN DE FUNCIONES PARA EL MOTOR QUE REPARTE EN VASOS

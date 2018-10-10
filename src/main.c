@@ -106,6 +106,10 @@ void initHardware(void)
 {
     SystemCoreClockUpdate();
 
+	/* Initializes GPIO */
+	Chip_GPIO_Init(LPC_GPIO);
+	Chip_IOCON_Init(LPC_IOCON);
+
 	initMotores();
 
 	SetPINSEL(ALARM,0);
